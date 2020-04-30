@@ -1,0 +1,2 @@
+rootProject.name='fibonacciapp'
+include ':app'
