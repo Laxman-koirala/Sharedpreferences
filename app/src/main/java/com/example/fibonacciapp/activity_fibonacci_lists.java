@@ -1,22 +1,27 @@
 package com.example.fibonacciapp;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.widget.TextView;
+import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 public class activity_fibonacci_lists extends AppCompatActivity {
-
-    TextView loadingView;
     RecyclerView recyclerView;
-    private int lastPosition;
+    public ArrayList<Long> fibList;
+    public  ArrayList<String> list;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -33,31 +38,25 @@ public class activity_fibonacci_lists extends AppCompatActivity {
         ArrayList<Long> fibList = FibonacciNumbersCalculator.getNums(num);
         MyAdapter adapter = new MyAdapter(fibList);
         recyclerView.setAdapter(adapter);
+    }
 
         //retrieve last position on start
-        SharedPreferences getPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        lastPosition = getPrefs.getInt("lastPos",0);
-        recyclerView.scrollToPosition(lastPosition);
+        public void loadData () {
+            SharedPreferences sharedPreferences = getSharedPreferences("sharedRef", MODE_PRIVATE);
+            Gson gson = new Gson();
+            String json = sharedPreferences.getString("history", null);
+            Type type = new TypeToken<ArrayList<String>>() {
+            }.getType();
+            if (gson.fromJson(json, type) == null) {
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                lastPosition = layoutManager.findFirstVisibleItemPosition();
+                fibList = new ArrayList<>();
+            } else {
+                list = gson.fromJson(json, type);
+                fibList = listToLongConverter.stringsToLongs(list);
             }
-        });
+        }
 
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //save position in sharepreference on destroy
-        SharedPreferences getPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        SharedPreferences.Editor e = getPrefs.edit();
-        e.putInt("lastPos", lastPosition);
-        e.apply();
-    }
 
 }
+
+
